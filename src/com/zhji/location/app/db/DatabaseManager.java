@@ -7,13 +7,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.zhji.location.app.SmartLocationApp;
 import com.zhji.location.app.db.model.ActivityDatabase;
-import com.zhji.location.app.db.model.GeofencingDatabase;
+import com.zhji.location.app.db.model.GeofenceDatabase;
 import com.zhji.location.app.db.model.LocationDatabase;
 
 public class DatabaseManager extends SQLiteOpenHelper {
 
     private final ActivityDatabase mActivityDatabase;
-    private final GeofencingDatabase mGeofencingDatabase;
+    private final GeofenceDatabase mGeofencingDatabase;
     private final LocationDatabase mLocationDatabase;
 
     /**
@@ -43,7 +43,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public DatabaseManager(final Context context) {
         super(context, DB_NAME, null, DB_VERSION);
         mActivityDatabase = new ActivityDatabase(this);
-        mGeofencingDatabase = new GeofencingDatabase(this);
+        mGeofencingDatabase = new GeofenceDatabase(this);
         mLocationDatabase = new LocationDatabase(this);
     }
 
@@ -51,7 +51,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void onCreate(final SQLiteDatabase db) {
         // Create the tables
         db.execSQL(ActivityDatabase.CREATE_TABLE);
-        db.execSQL(GeofencingDatabase.CREATE_TABLE);
+        db.execSQL(GeofenceDatabase.CREATE_TABLE);
         db.execSQL(LocationDatabase.CREATE_TABLE);
     }
 
@@ -60,7 +60,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if (newVersion > oldVersion) {
             // Drop the tables
             db.execSQL("DROP TABLE IF EXISTS " + ActivityDatabase.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + GeofencingDatabase.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + GeofenceDatabase.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + LocationDatabase.TABLE_NAME);
             onCreate(db);
         }
@@ -71,7 +71,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if (newVersion < oldVersion) {
             // Drop the tables
             db.execSQL("DROP TABLE IF EXISTS " + ActivityDatabase.TABLE_NAME);
-            db.execSQL("DROP TABLE IF EXISTS " + GeofencingDatabase.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + GeofenceDatabase.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + LocationDatabase.TABLE_NAME);
             onCreate(db);
         }
@@ -87,7 +87,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     /**
      * @return the mGeofencingDatabase
      */
-    public GeofencingDatabase getGeofencingDatabase() {
+    public GeofenceDatabase getGeofencingDatabase() {
         return mGeofencingDatabase;
     }
 

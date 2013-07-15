@@ -1,6 +1,14 @@
 
 package com.zhji.location.app.utils;
 
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
+
+import com.zhji.location.app.R;
+import com.zhji.location.app.SmartLocationApp;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -42,5 +50,28 @@ public class Utils {
     public static String generateLocationID(final double latitude, final double longitude) {
         final DecimalFormat df = new DecimalFormat("##.####");
         return generateHash(df.format(latitude) + df.format(longitude));
+    }
+
+    /**
+     * Convenience method to show notification
+     * 
+     * @param title
+     * @param text
+     */
+    public static void showNotification(final String title, final String text, final int id) {
+        // Build notification
+        final Context context = SmartLocationApp.getContext();
+        final Notification notification = new Notification.Builder(context)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_launcher).build();
+
+        final NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(Activity.NOTIFICATION_SERVICE);
+
+        // Hide the notification after its selected
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        notificationManager.notify(id, notification);
     }
 }

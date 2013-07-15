@@ -5,6 +5,8 @@
 
 package com.zhji.location.app.db.model;
 
+import android.content.ContentValues;
+
 import com.zhji.location.app.db.DatabaseManager;
 
 public class ActivityDatabase extends BaseDatabase {
@@ -18,8 +20,6 @@ public class ActivityDatabase extends BaseDatabase {
      */
     public static final String ID = "_id";
 
-    public static final String LOCATION_ID = "location_id";
-
     public static final String TIMESTAMP = "timestamp";
 
     public static final String ACTIVITY = "activity";
@@ -28,8 +28,8 @@ public class ActivityDatabase extends BaseDatabase {
      * SQL Command: createTable
      */
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" + ID
-            + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LOCATION_ID + " INTEGER, " + TIMESTAMP
-            + " INTEGER, " + ACTIVITY + " INTEGER);";
+            + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TIMESTAMP + " INTEGER, " + ACTIVITY
+            + " INTEGER);";
 
     /**
      * Constructor method
@@ -38,5 +38,18 @@ public class ActivityDatabase extends BaseDatabase {
      */
     public ActivityDatabase(final DatabaseManager databaseManager) {
         super(databaseManager, TABLE_NAME);
+    }
+
+    /**
+     * Convenience method to convert activityType to content values
+     * 
+     * @param activityType
+     * @return content values
+     */
+    public static ContentValues toContentValues(final int activityType) {
+        final ContentValues cv = new ContentValues();
+        cv.put(ACTIVITY, activityType);
+        cv.put(TIMESTAMP, System.currentTimeMillis());
+        return cv;
     }
 }

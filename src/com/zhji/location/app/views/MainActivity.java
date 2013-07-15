@@ -32,6 +32,7 @@ public class MainActivity extends Activity implements ServiceConnection {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "Starting Smart Location Service...");
         startService(new Intent(this, SmartLocationService.class));
     }
 
@@ -48,12 +49,13 @@ public class MainActivity extends Activity implements ServiceConnection {
         // Bind to LocalService
         final Intent intent = new Intent(this, SmartLocationService.class);
         bindService(intent, this, Context.BIND_AUTO_CREATE);
-
+        Log.d(TAG, "Bind service...");
     }
 
     @Override
     protected void onStop() {
         unbindService(this);
+        Log.d(TAG, "Unbind service...");
         super.onStop();
     }
 
@@ -88,12 +90,12 @@ public class MainActivity extends Activity implements ServiceConnection {
     public void onServiceConnected(final ComponentName name, final IBinder service) {
         final LocalBinder binder = (LocalBinder) service;
         mSmartLocationService = binder.getService();
-        mSmartLocationService.startUpdateLocation();
+        mSmartLocationService.start();
+        Log.d(TAG, "Smart Location Service connected...");
     }
 
     @Override
     public void onServiceDisconnected(final ComponentName name) {
-        // TODO Auto-generated method stub
-
+        Log.d(TAG, "Smart Location Service disconnected...");
     }
 }

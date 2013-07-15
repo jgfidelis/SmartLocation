@@ -9,10 +9,13 @@ import com.zhji.location.app.SmartLocationApp;
 
 public final class GooglePlayServicesUtils {
     // The update interval in milliseconds
-    public static final int UPDATE_INTERVAL = 5000;
+    public static final int ACTIVITY_UPDATE_INTERVAL = 60000;
+
+    // The update interval in milliseconds
+    public static final int LOCATION_UPDATE_INTERVAL = 60000;
 
     // A fast interval ceiling in milliseconds
-    public static final int FAST_INTERVAL_CEILING = 1000;
+    public static final int FAST_INTERVAL_CEILING = 30000;
 
     // Maximum distance to upgrade a new location
     public static final float LOCATION_DISTANCE_MAX = 30;

@@ -68,6 +68,9 @@ public class LocationDatabase extends BaseDatabase {
     // Max number to clean database when the size is reached
     private static final String LIMIT_CLEAN = "20";
 
+    // Error code when the database limit reached
+    public static final int LIMIT_REACHED_ERROR = -2;
+
     /**
      * Constructor method
      * 
@@ -228,9 +231,10 @@ public class LocationDatabase extends BaseDatabase {
         }
 
         final int size = getNumberOfRows();
+
         // If the size more than MAX_SIZE call the method to free some space
         if (size >= MAX_SIZE) {
-            freeSpace();
+            return LIMIT_REACHED_ERROR;
         }
 
         values.put(FREQUENCY, ++frequency);
@@ -240,19 +244,23 @@ public class LocationDatabase extends BaseDatabase {
     /**
      * This method is used to free database space
      */
-    private void freeSpace() {
+    public List<String> freeSpace() {
         final Cursor cursor = query(new String[] {
-                ID, FREQUENCY
+                ID, LOCATION_ID, FREQUENCY
         }, null, null, null, null, FREQUENCY + " ASC", LIMIT_CLEAN);
+
+        final List<String> geofenceIds = new ArrayList<String>();
 
         if (cursor != null && !cursor.isClosed()) {
             while (cursor.moveToNext()) {
                 delete(ID + "=?", new String[] {
                         String.valueOf(cursor.getLong(cursor.getColumnIndex(ID)))
                 });
+                geofenceIds.add(cursor.getString(cursor.getColumnIndex(LOCATION_ID)));
             }
             cursor.close();
         }
+        return geofenceIds;
     }
 
     /**
@@ -271,9 +279,11 @@ public class LocationDatabase extends BaseDatabase {
                 final String id = cursor.getString(cursor.getColumnIndex(LOCATION_ID));
                 final double latitude = cursor.getDouble(cursor.getColumnIndex(LATITUDE));
                 final double longitude = cursor.getDouble(cursor.getColumnIndex(LONGITUDE));
-                geofences.add(new SimpleGeofence(id, latitude, longitude,
+                geofences.add(new SimpleGeofence(id + Geofence.GEOFENCE_TRANSITION_ENTER, latitude,
+                        longitude,
                         Geofence.GEOFENCE_TRANSITION_ENTER).toGeofence());
-                geofences.add(new SimpleGeofence(id, latitude, longitude,
+                geofences.add(new SimpleGeofence(id + Geofence.GEOFENCE_TRANSITION_EXIT, latitude,
+                        longitude,
                         Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
             }
 

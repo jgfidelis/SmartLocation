@@ -5,6 +5,7 @@
     android:versionName="1.0" >
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <uses-sdk
         android:minSdkVersion="15"
@@ -26,7 +27,11 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".services.SmartLocationService" >
-        </service>
+        <service android:name=".services.SmartLocationService" />
+        <service android:name=".services.ActivityRecognitionIntentService" />
+        <service
+            android:name=".services.GeofenceIntentService"
+            android:exported="false" />
     </application>
+
 </manifest>
