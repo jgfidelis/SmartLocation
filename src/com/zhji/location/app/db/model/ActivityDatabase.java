@@ -52,4 +52,18 @@ public class ActivityDatabase extends BaseDatabase {
         cv.put(TIMESTAMP, System.currentTimeMillis());
         return cv;
     }
+
+    /**
+     * Convenience method to convert activityType to content values
+     * 
+     * @param activityType
+     * @param timestamp
+     * @return content values
+     */
+    public static ContentValues toContentValues(final int activityType, final long timestamp) {
+        final ContentValues cv = new ContentValues();
+        cv.put(ACTIVITY, activityType);
+        cv.put(TIMESTAMP, timestamp);
+        return cv;
+    }
 }

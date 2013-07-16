@@ -8,15 +8,19 @@ package com.zhji.location.app.db.model;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 
 import com.google.android.gms.location.Geofence;
+import com.zhji.location.app.SmartLocationApp;
 import com.zhji.location.app.db.DatabaseManager;
 import com.zhji.location.app.models.SimpleGeofence;
 import com.zhji.location.app.utils.Utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class LocationDatabase extends BaseDatabase {
@@ -155,12 +159,38 @@ public class LocationDatabase extends BaseDatabase {
         cv.put(LATITUDE, latitude);
         cv.put(LONGITUDE, longitude);
         // Generate stub object
-        cv.put(ACCURACY, new Random().nextFloat() * 100f);
-        cv.put(COUNTRY_NAME, "COUNTRY_NAME");
-        cv.put(COUNTRY_CODE, "COUNTRY_CODE");
-        cv.put(ADDRESS, "ADDRESS");
-        cv.put(LOCALITY, "LOCALITY");
-        cv.put(POSTAL_CODE, "POSTAL_CODE");
+        cv.put(ACCURACY, new Random().nextFloat() * 30);
+
+        String countryName = "COUNTRY_NAME";
+        String countryCode = "COUNTRY_CODE";
+        String address = "ADDRESS";
+        String locality = "LOCALITY";
+        String postaCode = "POSTAL_CODE";
+
+        final Geocoder geocoder = new Geocoder(SmartLocationApp.getContext(), Locale
+                .getDefault());
+
+        if (geocoder.isPresent()) {
+            try {
+                // Get the first address
+                final List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                final Address geoAddress = addresses.get(0);
+                countryName = geoAddress.getCountryName();
+                countryCode = geoAddress.getCountryCode();
+                address = geoAddress.getAddressLine(0);
+                locality = geoAddress.getLocality();
+                postaCode = geoAddress.getPostalCode();
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        cv.put(COUNTRY_NAME, countryName);
+        cv.put(COUNTRY_CODE, countryCode);
+        cv.put(ADDRESS, address);
+        cv.put(LOCALITY, locality);
+        cv.put(POSTAL_CODE, postaCode);
+        cv.put(FREQUENCY, new Random().nextInt() % 100);
         return cv;
     }
 

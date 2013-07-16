@@ -9,10 +9,8 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 import com.zhji.location.app.db.DatabaseManager;
 import com.zhji.location.app.db.model.ActivityDatabase;
-import com.zhji.location.app.utils.Utils;
 
 import java.text.SimpleDateFormat;
-import java.util.Random;
 
 public class ActivityRecognitionIntentService extends IntentService {
 
@@ -66,7 +64,8 @@ public class ActivityRecognitionIntentService extends IntentService {
                         .getActivityDatabase();
                 database.insert(ActivityDatabase.toContentValues(activityType));
                 Log.d(TAG, "Save activity on database");
-                Utils.showNotification("Activity Recognition", log, new Random().nextInt());
+                // Utils.showNotification("Activity Recognition", log, new
+                // Random().nextInt());
             }
         }
     }

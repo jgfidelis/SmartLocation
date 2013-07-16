@@ -25,5 +25,9 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/generate_stub_all"/>
-
+    <item
+        android:id="@+id/action_clear_all_database"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/clear_all_database"/>
 </menu>

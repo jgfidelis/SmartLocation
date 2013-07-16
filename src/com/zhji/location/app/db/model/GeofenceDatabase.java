@@ -48,13 +48,31 @@ public class GeofenceDatabase extends BaseDatabase {
      * 
      * @param geofence
      * @param transition
-     * @return
+     * @return content values
      */
     public static ContentValues toContentValues(final Geofence geofence, final int transition) {
         final ContentValues cv = new ContentValues();
         final String id = geofence.getRequestId();
         cv.put(LOCATION_ID, id.substring(0, id.length() - 1));
         cv.put(TIMESTAMP, System.currentTimeMillis());
+        cv.put(TRANSITION, transition);
+        return cv;
+    }
+
+    /**
+     * Convenience method to convert geofence and transition to content values
+     * 
+     * @param geofence
+     * @param timestamp
+     * @param transition
+     * @return content values
+     */
+    public static ContentValues toContentValues(final Geofence geofence, final long timestamp,
+            final int transition) {
+        final ContentValues cv = new ContentValues();
+        final String id = geofence.getRequestId();
+        cv.put(LOCATION_ID, id.substring(0, id.length() - 1));
+        cv.put(TIMESTAMP, timestamp);
         cv.put(TRANSITION, transition);
         return cv;
     }

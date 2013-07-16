@@ -3,6 +3,7 @@
 
     <string name="app_name">Smart Location</string>
     <string name="action_settings">Settings</string>
+    <string name="clear_all_database">Clear all database</string>
     <string name="generate_stub_all">Generate all stub</string>
     <string name="generate_stub_location">Generate stub location</string>
     <string name="generate_stub_geofence">Generate stub geonfece</string>

@@ -2,10 +2,12 @@
 package com.zhji.location.app.views;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -13,13 +15,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.location.Geofence;
 import com.zhji.location.app.R;
+import com.zhji.location.app.db.DatabaseManager;
+import com.zhji.location.app.db.model.ActivityDatabase;
+import com.zhji.location.app.db.model.GeofenceDatabase;
+import com.zhji.location.app.db.model.LocationDatabase;
 import com.zhji.location.app.services.SmartLocationService;
 import com.zhji.location.app.services.SmartLocationService.LocalBinder;
+
+import java.util.List;
+import java.util.Random;
 
 public class MainActivity extends Activity implements ServiceConnection {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    protected static final int MAX_NUM_LOCATION_STUB = 40;
+    protected static final int MAX_NUM_OF_DAY_GEOFENCE_STUB = 15;
+    protected static final int MAX_NUM_OF_DAY_ACTIVITY_STUB = 2;
+    protected static final float GEOFENCE_MUTATION_ERROR = 0.95f;
     private SmartLocationService mSmartLocationService;
 
     @Override
@@ -86,6 +100,9 @@ public class MainActivity extends Activity implements ServiceConnection {
                 generateStubGeofence();
                 generateStubActivityRecognition();
                 break;
+            case R.id.action_clear_all_database:
+                clearAllDatabase();
+                break;
             default:
                 break;
         }
@@ -96,26 +113,108 @@ public class MainActivity extends Activity implements ServiceConnection {
      * This method populate the location database with stub data
      */
     private void generateStubLocation() {
-        // TODO Auto-generated method stub
-        Toast.makeText(this, "Generate stub location not implemented.", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Generating stub location...", Toast.LENGTH_SHORT)
                 .show();
+        AsyncTask.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                final LocationDatabase database = DatabaseManager.getInstance()
+                        .getLocationDatabase();
+
+                double latitude;
+                double longitude;
+
+                for (int i = 0; i < MAX_NUM_LOCATION_STUB; i++) {
+                    latitude = -(22.85 + new Random().nextDouble() * 0.1);
+                    longitude = -(46.95 + new Random().nextDouble() * 0.1);
+                    database.insert(LocationDatabase.toContentValues(latitude, longitude));
+                }
+            }
+        });
     }
 
     /**
      * This method populate the geofence database with stub data
      */
     private void generateStubGeofence() {
-        // TODO Auto-generated method stub
-        Toast.makeText(this, "Generate stub geofence not implemented.", Toast.LENGTH_SHORT)
+        Toast.makeText(this, "Generating stub geofence...", Toast.LENGTH_SHORT)
                 .show();
+        AsyncTask.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                final LocationDatabase locationDatabase = DatabaseManager.getInstance()
+                        .getLocationDatabase();
+                final GeofenceDatabase database = DatabaseManager.getInstance()
+                        .getGeofencingDatabase();
+                final List<Geofence> geofences = locationDatabase.convertToGeofences();
+                final int size = geofences.size();
+                if (geofences != null && size > 0) {
+                    int location;
+                    final long currentTime = System.currentTimeMillis();
+                    long timestamp = currentTime - AlarmManager.INTERVAL_DAY
+                            * MAX_NUM_OF_DAY_GEOFENCE_STUB;
+                    while (timestamp < currentTime) {
+                        location = new Random().nextInt(size);
+                        do {
+                            database.insert(GeofenceDatabase.toContentValues(
+                                    geofences.get(location),
+                                    timestamp, Geofence.GEOFENCE_TRANSITION_ENTER));
+                            timestamp += new Random().nextInt(480) * 60000;
+                        } while (new Random().nextFloat() > GEOFENCE_MUTATION_ERROR);
+
+                        do {
+                            database.insert(GeofenceDatabase.toContentValues(
+                                    geofences.get(location),
+                                    timestamp, Geofence.GEOFENCE_TRANSITION_EXIT));
+
+                            timestamp += new Random().nextInt(120) * 60000;
+                        } while (new Random().nextFloat() > GEOFENCE_MUTATION_ERROR);
+                    }
+                }
+            }
+        });
     }
 
     /**
      * This method populate the activity recognition database with stub data
      */
     private void generateStubActivityRecognition() {
-        // TODO Auto-generated method stub
-        Toast.makeText(this, "Generate stub activity recognition not implemented.",
+        Toast.makeText(this, "Generating stub activity recognition...",
                 Toast.LENGTH_SHORT).show();
+        AsyncTask.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                final ActivityDatabase database = DatabaseManager.getInstance()
+                        .getActivityDatabase();
+                final long currentTime = System.currentTimeMillis();
+                long timestamp = currentTime - AlarmManager.INTERVAL_DAY
+                        * MAX_NUM_OF_DAY_ACTIVITY_STUB;
+                while (timestamp < currentTime) {
+                    database.insert(ActivityDatabase.toContentValues(new Random().nextInt(4),
+                            timestamp));
+                    timestamp += new Random().nextInt(5) * 60000;
+                }
+            }
+        });
+    }
+
+    /**
+     * This method clear all database
+     */
+    private void clearAllDatabase() {
+        Toast.makeText(this, "Cleaning all database...", Toast.LENGTH_SHORT).show();
+        AsyncTask.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                final DatabaseManager databaseManager = DatabaseManager.getInstance();
+                databaseManager.getLocationDatabase().delete(null, null);
+                databaseManager.getGeofencingDatabase().delete(null, null);
+                databaseManager.getActivityDatabase().delete(null, null);
+            }
+        });
     }
 }
