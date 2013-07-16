@@ -5,5 +5,25 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_settings"/>
+    <item
+        android:id="@+id/action_generate_stub_location"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/generate_stub_location"/>
+    <item
+        android:id="@+id/action_generate_stub_geofence"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/generate_stub_geofence"/>
+    <item
+        android:id="@+id/action_generate_stub_activity"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/generate_stub_activity"/>
+    <item
+        android:id="@+id/action_generate_stub_all"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/generate_stub_all"/>
 
 </menu>
