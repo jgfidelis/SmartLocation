@@ -135,7 +135,7 @@ public abstract class BaseDatabase {
     public int getNumberOfRows() {
         final SQLiteDatabase db = mDBManager.getReadableDatabase();
         final Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + mTableName, null);
-        if (cursor != null && !cursor.isClosed()) {
+        if (cursor != null) {
             if (cursor.moveToNext()) {
                 return cursor.getInt(cursor.getColumnIndex("COUNT(*)"));
             }

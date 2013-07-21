@@ -207,12 +207,12 @@ public class LocationDatabase extends BaseDatabase {
                 locationID
         }, null, null, null, null);
 
-        if (cursor != null && !cursor.isClosed()) {
+        if (cursor != null) {
             if (cursor.moveToNext()) {
                 final int frequency = cursor.getInt(cursor.getColumnIndex(FREQUENCY));
-                cursor.close();
                 return frequency;
             }
+            cursor.close();
         }
 
         return 0;
@@ -231,12 +231,12 @@ public class LocationDatabase extends BaseDatabase {
                 locationID
         }, null, null, null, null);
 
-        if (cursor != null && !cursor.isClosed()) {
+        if (cursor != null) {
             if (cursor.moveToNext()) {
                 final long id = cursor.getLong(cursor.getColumnIndex(ID));
-                cursor.close();
                 return id;
             }
+            cursor.close();
         }
 
         return 0;
@@ -283,7 +283,7 @@ public class LocationDatabase extends BaseDatabase {
 
         final List<String> ids = new ArrayList<String>();
 
-        if (cursor != null && !cursor.isClosed()) {
+        if (cursor != null) {
             while (cursor.moveToNext()) {
                 delete(ID + "=?", new String[] {
                         String.valueOf(cursor.getLong(cursor.getColumnIndex(ID)))
@@ -306,7 +306,7 @@ public class LocationDatabase extends BaseDatabase {
         // Get all locations
         final Cursor cursor = query(null, null, null, null, null, null, null);
 
-        if (cursor != null && !cursor.isClosed()) {
+        if (cursor != null) {
             while (cursor.moveToNext()) {
                 final String id = cursor.getString(cursor.getColumnIndex(LOCATION_ID));
                 final double latitude = cursor.getDouble(cursor.getColumnIndex(LATITUDE));
