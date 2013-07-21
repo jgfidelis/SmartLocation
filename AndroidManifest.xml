@@ -19,13 +19,23 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".views.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name" 
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".views.MainActivity$GoogleMapsUpdateReceiver"
+            android:enabled="true" >
+            <intent-filter>
+                <action android:name="com.zhji.location.app.service.ADD_NEW_LOCATION_ACTION" />
+                <action android:name="com.zhji.location.app.service.REMOVE_LOCATION_ACTION" />
+            </intent-filter>
+        </receiver>
 
         <service android:name=".services.SmartLocationService" />
         <service android:name=".services.ActivityRecognitionIntentService" />

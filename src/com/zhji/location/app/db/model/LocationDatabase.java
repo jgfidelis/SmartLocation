@@ -273,30 +273,32 @@ public class LocationDatabase extends BaseDatabase {
 
     /**
      * This method is used to free database space
+     * 
+     * @return list of ids removed
      */
     public List<String> freeSpace() {
         final Cursor cursor = query(new String[] {
                 ID, LOCATION_ID, FREQUENCY
         }, null, null, null, null, FREQUENCY + " ASC", LIMIT_CLEAN);
 
-        final List<String> geofenceIds = new ArrayList<String>();
+        final List<String> ids = new ArrayList<String>();
 
         if (cursor != null && !cursor.isClosed()) {
             while (cursor.moveToNext()) {
                 delete(ID + "=?", new String[] {
                         String.valueOf(cursor.getLong(cursor.getColumnIndex(ID)))
                 });
-                geofenceIds.add(cursor.getString(cursor.getColumnIndex(LOCATION_ID)));
+                ids.add(cursor.getString(cursor.getColumnIndex(LOCATION_ID)));
             }
             cursor.close();
         }
-        return geofenceIds;
+        return ids;
     }
 
     /**
      * Convert the location database to geofences
      * 
-     * @return
+     * @return the list of geofences
      */
     public List<Geofence> convertToGeofences() {
         final List<Geofence> geofences = new ArrayList<Geofence>();
@@ -320,5 +322,20 @@ public class LocationDatabase extends BaseDatabase {
             cursor.close();
         }
         return geofences;
+    }
+
+    /**
+     * Convert the location ids to geofence ids
+     * 
+     * @param ids
+     * @return geofence ids
+     */
+    public List<String> convertToGeofenceIds(final List<String> ids) {
+        final List<String> geofenceIds = new ArrayList<String>();
+        for (final String id : ids) {
+            geofenceIds.add(id + Geofence.GEOFENCE_TRANSITION_ENTER);
+            geofenceIds.add(id + Geofence.GEOFENCE_TRANSITION_EXIT);
+        }
+        return geofenceIds;
     }
 }

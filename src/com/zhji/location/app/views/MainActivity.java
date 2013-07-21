@@ -3,6 +3,7 @@ package com.zhji.location.app.views;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -24,10 +25,38 @@ import com.zhji.location.app.db.model.LocationDatabase;
 import com.zhji.location.app.services.SmartLocationService;
 import com.zhji.location.app.services.SmartLocationService.LocalBinder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends Activity implements ServiceConnection {
+
+    /*
+     * Receiver to update the google map
+     */
+    public static class GoogleMapsUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            Log.d(TAG, "GoogleMapsUpdateReceiver onReceive()");
+
+            Log.d(TAG, "Action: " + intent.getAction());
+            if (intent.getAction().equals(SmartLocationService.ADD_NEW_LOCATION_ACTION)) {
+                final String locationId = intent
+                        .getStringExtra(SmartLocationService.ADD_NEW_LOCATION_KEY);
+                if (locationId != null) {
+                    // TODO Adds new location on the map
+                    Log.d(TAG, "Update maps: " + locationId);
+                }
+            } else if (intent.getAction().equals(SmartLocationService.REMOVE_LOCATION_ACTION)) {
+                final ArrayList<String> ids = intent
+                        .getStringArrayListExtra(SmartLocationService.REMOVE_LOCATION_KEY);
+                if (ids != null) {
+                    // TODO Removes locations of the map
+                    Log.d(TAG, "Remove maps: " + ids);
+                }
+            }
+        }
+    }
 
     private static final String TAG = MainActivity.class.getSimpleName();
     protected static final int MAX_NUM_LOCATION_STUB = 40;
@@ -84,6 +113,7 @@ public class MainActivity extends Activity implements ServiceConnection {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
+                // Send broadcast with new id.
                 Toast.makeText(this, "Settings not implemented.", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_generate_stub_location:
@@ -130,6 +160,15 @@ public class MainActivity extends Activity implements ServiceConnection {
                     longitude = -(46.95 + new Random().nextDouble() * 0.1);
                     database.insert(LocationDatabase.toContentValues(latitude, longitude));
                 }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        Toast.makeText(MainActivity.this, "Generating stub location done!",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
             }
         });
     }
@@ -173,6 +212,14 @@ public class MainActivity extends Activity implements ServiceConnection {
                         } while (new Random().nextFloat() > GEOFENCE_MUTATION_ERROR);
                     }
                 }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "Generating stub geofence done!",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                });
             }
         });
     }
@@ -197,6 +244,15 @@ public class MainActivity extends Activity implements ServiceConnection {
                             timestamp));
                     timestamp += new Random().nextInt(5) * 60000;
                 }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,
+                                "Generating stub activity recognition done!",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }
@@ -214,6 +270,14 @@ public class MainActivity extends Activity implements ServiceConnection {
                 databaseManager.getLocationDatabase().delete(null, null);
                 databaseManager.getGeofencingDatabase().delete(null, null);
                 databaseManager.getActivityDatabase().delete(null, null);
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "Cleaning all database done!",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

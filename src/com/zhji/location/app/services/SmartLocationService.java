@@ -36,6 +36,7 @@ import com.zhji.location.app.utils.LocationServiceErrorMessages;
 import com.zhji.location.app.utils.Utils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -46,6 +47,16 @@ public class SmartLocationService extends Service implements LocationListener, C
 
     // Tag to debug
     private static final String TAG = SmartLocationService.class.getSimpleName();
+
+    // Broadcast action to update location
+    public static final String ADD_NEW_LOCATION_ACTION = "com.zhji.location.app.service.ADD_NEW_LOCATION_ACTION";
+
+    // Broadcast action to remove location
+    public static final String REMOVE_LOCATION_ACTION = "com.zhji.location.app.service.REMOVE_LOCATION_ACTION";
+
+    public static final String REMOVE_LOCATION_KEY = "REMOVE_LOCATION_KEY";
+
+    public static final String ADD_NEW_LOCATION_KEY = "ADD_NEW_LOCATION_KEY";
 
     // A request to connect to Location Services
     private LocationRequest mLocationRequest;
@@ -267,22 +278,38 @@ public class SmartLocationService extends Service implements LocationListener, C
                         // Try insert in database, if limit reached then free
                         // some space and try insert again
                         while (database.insert(cv) == LocationDatabase.LIMIT_REACHED_ERROR) {
-                            final List<String> geofenceIds = database.freeSpace();
-                            mLocationClient.removeGeofences(geofenceIds, SmartLocationService.this);
+                            // Removes some elements from the location database
+                            final List<String> ids = database.freeSpace();
+
+                            // Removes geofences ids by location.
+                            mLocationClient.removeGeofences(
+                                    database.convertToGeofenceIds(ids),
+                                    SmartLocationService.this);
+
+                            // Send broadcast with removed ids.
+                            final Intent intent = new Intent(REMOVE_LOCATION_ACTION);
+                            intent.putStringArrayListExtra(REMOVE_LOCATION_KEY,
+                                    new ArrayList<String>(ids));
+                            sendBroadcast(intent);
                         }
 
                         // Adding new geofences
                         Log.d(TAG, "Adding geofences.");
-                        final String geofenceId = Utils.generateLocationID(latitude, longitude);
-                        mGeofences.add(new SimpleGeofence(geofenceId
+                        final String locationId = Utils.generateLocationID(latitude, longitude);
+                        mGeofences.add(new SimpleGeofence(locationId
                                 + Geofence.GEOFENCE_TRANSITION_ENTER, latitude, longitude,
                                 Geofence.GEOFENCE_TRANSITION_ENTER).toGeofence());
-                        mGeofences.add(new SimpleGeofence(geofenceId
+                        mGeofences.add(new SimpleGeofence(locationId
                                 + Geofence.GEOFENCE_TRANSITION_EXIT, latitude, longitude,
                                 Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
                         updateGeofences();
-                        Utils.showNotification("New geofences", geofenceId,
+                        Utils.showNotification("New geofences", locationId,
                                 new Random().nextInt());
+
+                        // Send broadcast with new id.
+                        final Intent intent = new Intent(ADD_NEW_LOCATION_ACTION);
+                        intent.putExtra(ADD_NEW_LOCATION_KEY, locationId);
+                        sendBroadcast(intent);
                     } catch (final IOException e) {
                         Log.e(TAG, "Save on database error...");
                         e.printStackTrace();
