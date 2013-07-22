@@ -46,6 +46,12 @@ public class MainActivity extends Activity implements ServiceConnection {
                 if (locationId != null) {
                     // TODO Adds new location on the map
                     Log.d(TAG, "Update maps: " + locationId);
+                    Log.d(TAG,
+                            "Latitude: "
+                                    + intent.getDoubleExtra(SmartLocationService.LATITUDE_KEY, 0));
+                    Log.d(TAG,
+                            "Longitude: "
+                                    + intent.getDoubleExtra(SmartLocationService.LONGITUDE_KEY, 0));
                 }
             } else if (intent.getAction().equals(SmartLocationService.REMOVE_LOCATION_ACTION)) {
                 final ArrayList<String> ids = intent

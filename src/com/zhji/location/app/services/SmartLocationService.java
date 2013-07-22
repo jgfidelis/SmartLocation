@@ -58,6 +58,10 @@ public class SmartLocationService extends Service implements LocationListener, C
 
     public static final String ADD_NEW_LOCATION_KEY = "ADD_NEW_LOCATION_KEY";
 
+    public static final String LATITUDE_KEY = "LATITUDE_KEY";
+
+    public static final String LONGITUDE_KEY = "LONGITUDE_KEY";
+
     // A request to connect to Location Services
     private LocationRequest mLocationRequest;
 
@@ -309,6 +313,8 @@ public class SmartLocationService extends Service implements LocationListener, C
                         // Send broadcast with new id.
                         final Intent intent = new Intent(ADD_NEW_LOCATION_ACTION);
                         intent.putExtra(ADD_NEW_LOCATION_KEY, locationId);
+                        intent.putExtra(LATITUDE_KEY, latitude);
+                        intent.putExtra(LONGITUDE_KEY, longitude);
                         sendBroadcast(intent);
                     } catch (final IOException e) {
                         Log.e(TAG, "Save on database error...");
