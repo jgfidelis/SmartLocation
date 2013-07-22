@@ -1,4 +1,3 @@
-
 package com.zhji.location.app.views;
 
 import android.app.Activity;
@@ -8,20 +7,33 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.zhji.location.app.R;
 import com.zhji.location.app.db.DatabaseManager;
 import com.zhji.location.app.db.model.ActivityDatabase;
 import com.zhji.location.app.db.model.GeofenceDatabase;
 import com.zhji.location.app.db.model.LocationDatabase;
+import com.zhji.location.app.models.SimpleGeofence;
 import com.zhji.location.app.services.SmartLocationService;
 import com.zhji.location.app.services.SmartLocationService.LocalBinder;
 
@@ -70,14 +82,35 @@ public class MainActivity extends Activity implements ServiceConnection {
     protected static final int MAX_NUM_OF_DAY_ACTIVITY_STUB = 2;
     protected static final float GEOFENCE_MUTATION_ERROR = 0.95f;
     private SmartLocationService mSmartLocationService;
+    private GoogleMap mMap;
+	private LocationDatabase ldb;
+	private GeofenceDatabase gdb;
+	private ActivityDatabase adb;
+	private List<SimpleGeofence> geofences;
 
-    @Override
-    protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.d(TAG, "Starting Smart Location Service...");
-        startService(new Intent(this, SmartLocationService.class));
-    }
+	@Override
+	protected void onCreate(final Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+				.getMap();
+		geofences = new ArrayList<SimpleGeofence>();
+
+		gdb = DatabaseManager.getInstance().getGeofencingDatabase();
+		ldb = DatabaseManager.getInstance().getLocationDatabase();
+		adb = DatabaseManager.getInstance().getActivityDatabase();
+
+		if (adb.getNumberOfRows() == 0 && ldb.getNumberOfRows() == 0
+				&& gdb.getNumberOfRows() == 0) {
+			generateStubLocation();
+			generateStubGeofence();
+			generateStubActivityRecognition();
+		} else {
+			fillMapfromDB();
+		}
+		Log.d(TAG, "Starting Smart Location Service...");
+		startService(new Intent(this, SmartLocationService.class));
+	}
 
     @Override
     protected void onStart() {
@@ -287,4 +320,76 @@ public class MainActivity extends Activity implements ServiceConnection {
             }
         });
     }
+ // Função auxiliar para verificar graficamente se as alterações foram
+ 	// realmente executadas
+ 	public void testMap(LatLng point) {
+ 		MarkerOptions markerOptions = new MarkerOptions();
+ 		markerOptions.position(point);
+ 		markerOptions.title(point.latitude + " : " + point.longitude);
+ 		mMap.addMarker(markerOptions);
+
+ 		CircleOptions circle = new CircleOptions();
+ 		circle.center(point);
+ 		circle.fillColor(0x40ff0000);
+ 		circle.radius(SimpleGeofence.DEFAULT_RADIUS);
+ 		circle.strokeWidth(2);
+ 		Circle c = mMap.addCircle(circle);
+ 	}
+
+ 	// Atualiza o mapa para centralizar no ponto especificado
+ 	public void updateMap(LatLng point) {
+ 		mMap.clear();
+ 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 2f));
+ 	}
+
+ 	// Gera o ponto a partir da próxima entrada do banco de dados, cria também o
+ 	// geofence
+ 	public LatLng createLatLng(Cursor locationcursor, Cursor geofencecursor) {
+ 		locationcursor.moveToNext();
+ 		geofencecursor.moveToNext();
+
+ 		LatLng point = new LatLng(locationcursor.getDouble(locationcursor
+ 				.getColumnIndex(LocationDatabase.LATITUDE)),
+ 				locationcursor.getDouble(locationcursor
+ 						.getColumnIndex(LocationDatabase.LONGITUDE)));
+ 		geofences.add(new SimpleGeofence(geofencecursor
+ 				.getString(geofencecursor
+ 						.getColumnIndex(GeofenceDatabase.LOCATION_ID)),
+ 				point.latitude, point.longitude, SimpleGeofence.DEFAULT_RADIUS,
+ 				SimpleGeofence.DEFAULT_EXPIRATION_DURATION, geofencecursor
+ 						.getInt(geofencecursor
+ 								.getColumnIndex(GeofenceDatabase.TRANSITION))));
+ 		return point;
+ 	}
+
+ 	private void fillMapfromDB() {
+ 		Cursor locationcursor = null;
+ 		Cursor geofencecursor = null;
+
+ 		locationcursor = ldb.query(new String[] { LocationDatabase.LOCATION_ID,
+ 				LocationDatabase.LATITUDE, LocationDatabase.LONGITUDE }, null,
+ 				null, null, null, LocationDatabase.LOCATION_ID, null);
+ 		geofencecursor = gdb.query(new String[] { GeofenceDatabase.LOCATION_ID,
+ 				GeofenceDatabase.TRANSITION }, null, null, null, null,
+ 				GeofenceDatabase.LOCATION_ID, null);
+
+ 		do {
+ 			LatLng p = createLatLng(locationcursor, geofencecursor);
+ 			testMap(p);
+ 			locationcursor.moveToNext();
+ 			geofencecursor.moveToNext();
+ 		} while (!locationcursor.isLast());
+
+ 		LatLng p = createLatLng(locationcursor, geofencecursor);
+ 		testMap(p);
+
+ 	}
+
+ 	// Função para preencher o mapa, recebe o cursor das buscas nos bancos de
+ 	// dados locationDatabase e geofenceDatabase, respectivamente
+ 	public void fillMap(Cursor locationcursor, Cursor geofencecursor) {
+ 		LatLng point = createLatLng(locationcursor, geofencecursor);
+ 		updateMap(point);
+ 		testMap(point);
+ 	}
 }
