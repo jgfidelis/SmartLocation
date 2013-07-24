@@ -59,10 +59,10 @@ public class MainActivity extends Activity implements ServiceConnection {
 						.getStringExtra(SmartLocationService.ADD_NEW_LOCATION_KEY);
 				if (locationId != null) {
 					
-					graphMap(createLatLng(locationId, intent.getDoubleExtra(
+					/*graphMap(createLatLng(locationId, intent.getDoubleExtra(
 							SmartLocationService.LATITUDE_KEY, 0),
 							intent.getDoubleExtra(
-									SmartLocationService.LONGITUDE_KEY, 0)));
+									SmartLocationService.LONGITUDE_KEY, 0)));*/
 					Log.d(TAG, "Update maps: " + locationId);
 					Log.d(TAG,
 							"Latitude: "
@@ -80,7 +80,7 @@ public class MainActivity extends Activity implements ServiceConnection {
 				final ArrayList<String> ids = intent
 						.getStringArrayListExtra(SmartLocationService.REMOVE_LOCATION_KEY);
 				if (ids != null) {
-					rebuildMap();
+					//rebuildMap();
 					Log.d(TAG, "Remove maps: " + ids);
 				}
 			}
@@ -355,17 +355,15 @@ public class MainActivity extends Activity implements ServiceConnection {
 	}
 
 	// Atualiza o mapa para centralizar no ponto especificado
-	public void updateMap(LatLng point) {
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 2f));
+	public static void updateMap(LatLng point) {
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 8f));
 	}
 
 	// Gera o ponto a partir da próxima entrada do banco de dados, cria também o
 	// geofence
 	public static LatLng createLatLng(Cursor locationcursor,
 			Cursor geofencecursor) {
-		locationcursor.moveToNext();
-		geofencecursor.moveToNext();
-
+		
 		LatLng point = new LatLng(locationcursor.getDouble(locationcursor
 				.getColumnIndex(LocationDatabase.LATITUDE)),
 				locationcursor.getDouble(locationcursor
@@ -398,15 +396,19 @@ public class MainActivity extends Activity implements ServiceConnection {
 		geofencecursor = gdb.query(new String[] { GeofenceDatabase.LOCATION_ID,
 				GeofenceDatabase.TRANSITION }, null, null, null, null,
 				GeofenceDatabase.LOCATION_ID, null);
-
-		while (!locationcursor.isLast()) {
+		geofencecursor.moveToNext();
+		locationcursor.moveToNext();
+		
+		while(!locationcursor.isLast())
+		{
 			LatLng p = createLatLng(locationcursor, geofencecursor);
 			graphMap(p);
-			locationcursor.moveToNext();
 			geofencecursor.moveToNext();
+			locationcursor.moveToNext();
 		}
 		LatLng p = createLatLng(locationcursor, geofencecursor);
 		graphMap(p);
+		updateMap(p);
 	}
 
 	// Função para preencher o mapa, recebe o cursor das buscas nos bancos de
