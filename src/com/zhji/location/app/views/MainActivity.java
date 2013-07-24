@@ -339,8 +339,7 @@ public class MainActivity extends Activity implements ServiceConnection {
 		});
 	}
 
-	// Função auxiliar para verificar graficamente se as alterações foram
-	// realmente executadas
+	// Função que registra graficamente as alterações feitas
 	public static void graphMap(LatLng point) {
 		MarkerOptions markerOptions = new MarkerOptions();
 		markerOptions.position(point);
@@ -357,7 +356,6 @@ public class MainActivity extends Activity implements ServiceConnection {
 
 	// Atualiza o mapa para centralizar no ponto especificado
 	public void updateMap(LatLng point) {
-		mMap.clear();
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 2f));
 	}
 
@@ -389,6 +387,7 @@ public class MainActivity extends Activity implements ServiceConnection {
 		return new LatLng(lat, lng);
 	}
 
+	//Lê todas as entradas do banco de dados e adiciona como pontos no mapa
 	private static void fillMapfromDB() {
 		Cursor locationcursor = null;
 		Cursor geofencecursor = null;
@@ -418,6 +417,7 @@ public class MainActivity extends Activity implements ServiceConnection {
 		graphMap(point);
 	}
 
+	//Função para reconstruir o mapa quando da remoção de diversas entradas
 	public static void rebuildMap() {
 		mMap.clear();
 		fillMapfromDB();
